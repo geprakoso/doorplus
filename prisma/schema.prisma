@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id          String   @id @default(cuid())
+  code        String   // KUSEN_OB, KUSEN_MT, etc.
+  name        String
+  size        String   // "3_INCH", "4_INCH", "UNIVERSAL"
+  category    String   // "KUSEN", "DAUN", "REL", "LIST", "PANEL"
+  lengthMm    Int      @default(6000)
+  priceSilver Float    @default(0)
+  priceBrown  Float    @default(0)
+  priceBlack  Float    @default(0)
+  priceWhite  Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([code, size])
+}
+
+model Glass {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  thicknessMm Int
+  type        String   // "POLOS", "RIBEN", "TEMPERED"
+  pricePerM2  Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Accessory {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  name         String
+  unit         String   // "meter", "pasang", "set", "pcs", "tube", "ls"
+  pricePerUnit Float    @default(0)
+  category     String   // "SEAL", "HINGE", "LOCK", "ROLLER", "FASTENER"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ProductPreset {
+  id              String   @id @default(cuid())
+  category        String   // "DOOR", "WINDOW"
+  code            String   @unique
+  name            String
+  description     String?
+  defaultWidth    Int      @default(900)
+  defaultHeight   Int      @default(2100)
+  defaultPanels   Int      @default(1)
+  defaultMullions Int      @default(0)
+  configJson      String   // JSON string with detailed parametric rules
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  clientName  String?
+  address     String?
+  notes       String?
+  items       ProjectItem[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model ProjectItem {
+  id                String   @id @default(cuid())
+  projectId         String
+  project           Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name              String
+  category          String   // "DOOR", "WINDOW"
+  presetCode        String
+  width             Int      // mm
+  height            Int      // mm
+  quantity          Int      @default(1)
+  frameSize         String   @default("3_INCH") // "3_INCH", "4_INCH"
+  frameThickness    Float    @default(40) // mm
+  color             String   @default("SILVER") // "SILVER", "BROWN", "BLACK", "WHITE"
+  glassCode         String   @default("KACA_POLOS_5MM")
+  calculationResult String   // JSON string containing detailed results
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
